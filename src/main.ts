@@ -13,7 +13,7 @@ async function bootstrap() {
     }),
   );
   app.useStaticAssets(join(__dirname, '..', 'public')); //exponer la carpeta public para imagenes
-  app.enableCors(); //Habilitar CORS para todas las rutas
+  app.enableCors();
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

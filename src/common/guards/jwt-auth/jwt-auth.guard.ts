@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { verify } from 'jsonwebtoken';
 
@@ -8,25 +8,23 @@ export class JwtAuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-
     const authHeader = request.headers.authorization;
-    if (!authHeader) return false;
+
+    if (!authHeader) throw new UnauthorizedException('Token no proporcionado');
 
     const token = authHeader.split(' ')[1];
-    if (!token) return false;
+    if (!token) throw new UnauthorizedException('Token inválido');
 
     try {
       const secreto = this.configService.get<string>('JWT_SECRET');
-      if (typeof secreto !== 'string' || !secreto) {
-        console.error('JWT_SECRET no está definido o no es un string');
-        return false;
-      }
-      const payload = verify(token, secreto);
+      if (!secreto) throw new Error('JWT_SECRET no está definido en .env');
+
+      const payload = verify(String(token), secreto);
       request.user = payload;
       return true;
     } catch (error) {
-      console.error('Token inválido:', error.message);
-      return false;
+      console.error('Error al verificar el token:', error.message);
+      throw new UnauthorizedException('Token inválido o expirado');
     }
   }
 }

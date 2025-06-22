@@ -86,7 +86,7 @@ export class PublicacionesService {
 
     await publicacion.save();
 
-    this.publicacionesGateway.emitirNuevaPublicacion(publicacion);
+    this.publicacionesGateway.emitirActualizacionPublicacion(publicacion);
     return publicacion;
   }
 
@@ -104,7 +104,7 @@ export class PublicacionesService {
     publicacion.estado = false;
     await publicacion.save();
 
-    this.publicacionesGateway.emitirNuevaPublicacion(publicacion);
+    this.publicacionesGateway.emitirEliminacionPublicacion(publicacion);
     return { message: 'Publicación desactivada' };
   }
 

@@ -6,17 +6,16 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { sign, decode, verify } from 'jsonwebtoken/index';
+import { sign, decode, verify, JwtPayload } from 'jsonwebtoken';
 import { CreateUsuarioDto } from '../usuarios/dto/create-usuario.dto';
 import { UsuariosService } from 'src/usuarios/usuarios.service';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
-import { JwtPayload } from 'jsonwebtoken/index';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class AuthService {
   private secreto: string;
+  private expiracion: any;
 
   constructor(
     private readonly usuariosService: UsuariosService,
@@ -26,10 +25,11 @@ export class AuthService {
     if (!secreto) {
       throw new Error('JWT_SECRET is not defined in environment variables');
     }
+    this.expiracion = this.configService.get<string>('JWT_EXPIRACION') || '15m';
     this.secreto = secreto;
   }
 
-  async registrar(body: CreateUsuarioDto, imagenPerfil: Express.Multer.File) {
+  async registrar(body: CreateUsuarioDto, imagenPerfil: Express.Multer.File, perfil: string) {
     try {
       if (!imagenPerfil) {
         throw new BadRequestException('La imagen de perfil es obligatoria');
@@ -39,7 +39,7 @@ export class AuthService {
       const nuevoUsuario = await this.usuariosService.create({
         ...body,
         imagenPerfil: imagenUrl,
-        perfil: 'usuario',
+        perfil: perfil,
       });
 
       return {
@@ -93,12 +93,13 @@ export class AuthService {
     }
   }
 
-  crearToken(id, nombre: string, perfil: string) {
+  crearToken(id: any, nombre: string, perfil: string) {
     try {
       const payload = { id, nombre, perfil };
+
       return sign(payload, this.secreto, {
         algorithm: 'HS256',
-        expiresIn: '15m',
+        expiresIn: this.expiracion,
       });
     } catch (error) {
       console.error('Error al generar token:', error);
@@ -110,9 +111,15 @@ export class AuthService {
     try {
       const payload = verify(token, this.secreto) as JwtPayload;
 
-      const nuevoToken = sign({ id: payload.id, nombre: payload.nombre }, this.secreto, {
-        expiresIn: '15m',
-      });
+      const nuevoToken = sign(
+        {
+          id: payload.id,
+          nombre: payload.nombre,
+          perfil: payload.perfil,
+        },
+        this.secreto,
+        { expiresIn: this.expiracion },
+      );
 
       return { token: nuevoToken };
     } catch (error) {

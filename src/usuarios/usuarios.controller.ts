@@ -34,7 +34,7 @@ export class UsuariosController {
     return this.usuariosService.obtenerPerfilyPosts(String(usuarioId));
   }
 
-  @Post('me')
+  @Post('me') // Perfil propio
   @UseInterceptors(
     FileInterceptor('imagenPerfil', {
       fileFilter: imageFileFilter,

@@ -7,10 +7,14 @@ import {
   Get,
   Headers,
   UnauthorizedException,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
 import { imageFileFilter, imageFileLimits } from 'src/common/utils/file-upload.util';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -24,12 +28,42 @@ export class AuthController {
     }),
   )
   registro(@UploadedFile() imagenPerfil: Express.Multer.File, @Body() body: any) {
-    return this.authService.registrar(body, imagenPerfil);
+    const perfil = 'usuario';
+    return this.authService.registrar(body, imagenPerfil, perfil);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/registroAdmin')
+  @UseInterceptors(
+    FileInterceptor('imagenPerfil', {
+      fileFilter: imageFileFilter,
+      limits: imageFileLimits,
+    }),
+  )
+  registroAdmin(
+    @Req() req: Request & { user: any },
+    @UploadedFile() imagenPerfil: Express.Multer.File,
+    @Body() body: any,
+  ) {
+    if (req.user.perfil !== 'administrador') {
+      throw new UnauthorizedException('Sólo un administrador puede crear nuevos administradores.');
+    }
+    const perfil = 'administrador';
+    return this.authService.registrar(body, imagenPerfil, perfil);
   }
 
   @Post('/login')
   login(@Body() body: any) {
     return this.authService.loguear(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/autorizar')
+  autorizar(@Req() req: Request & { user: any }) {
+    return {
+      autorizado: true,
+      usuario: req.user,
+    };
   }
 
   @Get('/datos')
