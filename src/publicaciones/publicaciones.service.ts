@@ -62,6 +62,20 @@ export class PublicacionesService {
     return publicaciones;
   }
 
+  async findInactivas() {
+    return this.publicacionModel
+      .find({ estado: false })
+      .sort({ updatedAt: -1 })
+      .populate('autor', 'userName imagenPerfil');
+  }
+
+  async findInactivasPorUsuario(usuarioId: string) {
+    return this.publicacionModel
+      .find({ estado: false, autor: usuarioId })
+      .sort({ updatedAt: -1 })
+      .populate('autor', 'userName imagenPerfil');
+  }
+
   async findOne(id: string) {
     const publicacion = await this.publicacionModel.findById(id);
     if (!publicacion) throw new NotFoundException('Publicación no encontrada');
@@ -73,19 +87,22 @@ export class PublicacionesService {
     const publicacion = await this.publicacionModel.findById(id);
     if (!publicacion) throw new NotFoundException('Publicación no encontrada');
 
-    if (!body.titulo && !body.mensaje && !imagen) {
+    if (!body.titulo && !body.mensaje && !imagen && body.estado === undefined) {
       throw new BadRequestException('No se recibió ningún dato para actualizar.');
     }
 
-    publicacion.titulo = body.titulo || publicacion.titulo;
-    publicacion.mensaje = body.mensaje || publicacion.mensaje;
+    if (body.titulo) publicacion.titulo = body.titulo;
+    if (body.mensaje) publicacion.mensaje = body.mensaje;
 
     if (imagen) {
       publicacion.imagen = `/images/${imagen.filename}`;
     }
 
-    await publicacion.save();
+    if (body.estado !== undefined) {
+      publicacion.estado = body.estado === 'true' || body.estado === true;
+    }
 
+    await publicacion.save();
     this.publicacionesGateway.emitirActualizacionPublicacion(publicacion);
     return publicacion;
   }

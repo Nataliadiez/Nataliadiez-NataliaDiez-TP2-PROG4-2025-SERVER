@@ -15,6 +15,7 @@ import { AuthService } from './auth.service';
 import { imageFileFilter, imageFileLimits } from 'src/common/utils/file-upload.util';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
 import { Request } from 'express';
+import { AdminGuard } from 'src/common/guards/admin/admin.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -32,7 +33,7 @@ export class AuthController {
     return this.authService.registrar(body, imagenPerfil, perfil);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Post('/registroAdmin')
   @UseInterceptors(
     FileInterceptor('imagenPerfil', {
@@ -45,9 +46,6 @@ export class AuthController {
     @UploadedFile() imagenPerfil: Express.Multer.File,
     @Body() body: any,
   ) {
-    if (req.user.perfil !== 'administrador') {
-      throw new UnauthorizedException('Sólo un administrador puede crear nuevos administradores.');
-    }
     const perfil = 'administrador';
     return this.authService.registrar(body, imagenPerfil, perfil);
   }

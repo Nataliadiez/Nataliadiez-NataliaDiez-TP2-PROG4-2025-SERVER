@@ -25,5 +25,6 @@ import { PublicacionesGateway } from './publicaciones.gateway';
   ],
   controllers: [PublicacionesController],
   providers: [PublicacionesService, PublicacionesGateway],
+  exports: [MongooseModule],
 })
 export class PublicacionesModule {}

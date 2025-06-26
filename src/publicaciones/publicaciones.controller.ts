@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UseGuards,
   Query,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PublicacionesService } from './publicaciones.service';
 import { CreatePublicacioneDto } from './dto/create-publicacione.dto';
@@ -20,6 +21,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
 import { imageFileFilter, imageFileLimits } from 'src/common/utils/file-upload.util';
 import { ObjectId } from 'mongoose';
+import { AdminGuard } from 'src/common/guards/admin/admin.guard';
 
 @Controller('publicaciones')
 export class PublicacionesController {
@@ -43,6 +45,7 @@ export class PublicacionesController {
     return this.publicacionesService.create(dto, String(autorId), imagen);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll(
     @Query('skip') skip?: string,
@@ -57,9 +60,16 @@ export class PublicacionesController {
     return this.publicacionesService.findAll(skipNum, limitNum, ordenTyped, autorId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.publicacionesService.findOne(id);
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Get('inactivas')
+  findInactivas() {
+    return this.publicacionesService.findInactivas();
+  }
+
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Get('/inactivas/:usuarioId')
+  obtenerPublicacionesInactivasPorUsuario(@Param('usuarioId') usuarioId: string) {
+    return this.publicacionesService.findInactivasPorUsuario(usuarioId);
   }
 
   @Patch(':id')
