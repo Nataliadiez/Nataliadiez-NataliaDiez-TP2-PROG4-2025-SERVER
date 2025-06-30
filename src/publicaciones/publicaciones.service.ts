@@ -57,9 +57,13 @@ export class PublicacionesService {
       .sort({ [sortKey]: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('autor', 'userName imagenPerfil');
+      .populate('autor', 'userName imagenPerfil estado');
 
-    return publicaciones;
+    const activas = publicaciones.filter(
+      (p) => p.autor && typeof p.autor === 'object' && (p.autor as any).estado !== false,
+    );
+    console.log(activas);
+    return activas;
   }
 
   async findInactivas() {

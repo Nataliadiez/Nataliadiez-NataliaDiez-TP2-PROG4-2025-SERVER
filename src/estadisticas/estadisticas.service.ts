@@ -84,4 +84,39 @@ export class EstadisticasService {
 
     return resultado || [];
   }
+
+  async contarComentariosPorPublicacion(desde: string, hasta: string): Promise<any> {
+    const desdeFecha = new Date(desde);
+    const hastaFecha = new Date(hasta);
+    hastaFecha.setHours(23, 59, 59, 999);
+
+    const resultado = await this.publicacionModel.aggregate([
+      { $unwind: '$comentarios' },
+      {
+        $match: {
+          'comentarios.fecha': {
+            $gte: desdeFecha,
+            $lte: hastaFecha,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$titulo',
+          cantidadComentarios: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { cantidadComentarios: -1 },
+      },
+      {
+        $project: {
+          titulo: '$_id',
+          cantidadComentarios: 1,
+          _id: 0,
+        },
+      },
+    ]);
+    return resultado || [];
+  }
 }

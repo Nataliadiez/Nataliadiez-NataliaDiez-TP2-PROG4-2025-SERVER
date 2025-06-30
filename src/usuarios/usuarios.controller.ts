@@ -10,6 +10,7 @@ import {
   Req,
   UseInterceptors,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
@@ -17,6 +18,7 @@ import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { imageFileFilter, imageFileLimits } from 'src/common/utils/file-upload.util';
+import { AdminGuard } from 'src/common/guards/admin/admin.guard';
 
 @UseGuards(JwtAuthGuard)
 @Controller('usuarios')
@@ -24,8 +26,9 @@ export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
   @Get()
-  findAll() {
-    return this.usuariosService.findAll();
+  findAll(@Query('incluirInactivos') incluirInactivos?: string) {
+    const incluir = incluirInactivos === 'true';
+    return this.usuariosService.findAll(incluir);
   }
 
   @Get('me') // Perfil propio
@@ -55,7 +58,13 @@ export class UsuariosController {
     return this.usuariosService.listarUserNames();
   }
 
-  @Get(':id') //perfil de otro usuario
+  @UseGuards(AdminGuard)
+  @Post('reactivar/:id')
+  reactivarUsuario(@Param('id') id: string) {
+    return this.usuariosService.reactivarUsuario(id);
+  }
+
+  @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usuariosService.findOne(id);
   }

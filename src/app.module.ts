@@ -7,6 +7,7 @@ import { PublicacionesModule } from './publicaciones/publicaciones.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
+import { SpotifyModule } from './spotify/spotify.module';
 //JWT_SECRET
 
 @Module({
@@ -19,6 +20,7 @@ import { EstadisticasModule } from './estadisticas/estadisticas.module';
     PublicacionesModule,
     UsuariosModule,
     EstadisticasModule,
+    SpotifyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

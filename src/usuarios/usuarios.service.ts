@@ -45,17 +45,18 @@ export class UsuariosService {
     return guardado;
   }
 
-  async findAll() {
-    const todos = await this.usuarioModel.find();
-    if (!todos.length) {
-      throw new NotFoundException('No hay usuarios registrados');
+  async findAll(incluirInactivos = false) {
+    const filtro = incluirInactivos ? {} : { estado: true };
+    const usuarios = await this.usuarioModel.find(filtro);
+    if (!usuarios.length) {
+      throw new NotFoundException('No hay usuarios disponibles');
     }
-    return todos;
+    return usuarios;
   }
 
   async findOne(id: string) {
     const uno = await this.usuarioModel.findById(id);
-    if (!uno) {
+    if (!uno || uno.estado === false) {
       throw new NotFoundException('Usuario no encontrado');
     }
     return uno as Usuario;
@@ -109,7 +110,10 @@ export class UsuariosService {
   }
 
   async listarUserNames() {
-    const usuarios = await this.usuarioModel.find({ perfil: 'usuario' }, { userName: 1, _id: 1 });
+    const usuarios = await this.usuarioModel.find(
+      { perfil: 'usuario', estado: true },
+      { userName: 1, _id: 1 },
+    );
 
     if (!usuarios.length) {
       throw new NotFoundException('No hay usuarios disponibles');
@@ -136,5 +140,13 @@ export class UsuariosService {
     } catch (error) {
       throw new ConflictException('Error al actualizar el perfil: ' + error.message);
     }
+  }
+
+  async reactivarUsuario(userId: string) {
+    const usuario = await this.usuarioModel.findById(userId);
+    if (!usuario) throw new NotFoundException('Usuario no encontrado');
+    usuario.estado = true;
+    await usuario.save();
+    return usuario;
   }
 }

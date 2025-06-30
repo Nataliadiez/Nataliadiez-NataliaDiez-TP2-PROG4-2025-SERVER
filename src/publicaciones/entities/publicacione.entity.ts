@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ObjectId, Types } from 'mongoose';
 import { Usuario } from 'src/usuarios/entities/usuario.entity';
 
-@Schema({ collection: 'publicaciones' })
+@Schema({ collection: 'publicaciones', timestamps: true })
 export class Publicacione {
   _id?: ObjectId;
 

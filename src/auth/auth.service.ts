@@ -60,11 +60,17 @@ export class AuthService {
   async loguear(body: any) {
     try {
       const { email, userName, password } = body;
-      const usuarios = await this.usuariosService.findAll();
+      const usuarios = await this.usuariosService.findAll(true);
 
       const usuario = usuarios.find((u) => u.email === email || u.userName === userName);
 
       if (!usuario) throw new NotFoundException('Usuario no encontrado');
+
+      if (!usuario.estado) {
+        throw new UnauthorizedException(
+          'La cuenta está desactivada. Contactá con un administrador.',
+        );
+      }
 
       const passwordMatch = await bcrypt.compare(String(password), usuario.password);
 

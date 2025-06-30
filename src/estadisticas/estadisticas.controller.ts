@@ -19,4 +19,12 @@ export class EstadisticasController {
   comentariosPorTiempo(@Query(new ValidarFechasPipe()) query: { desde: string; hasta: string }) {
     return this.estadisticasService.contarComentariosPorTiempo(query.desde, query.hasta);
   }
+
+  @Get('comentarios-por-publicacion')
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  comentariosPorPublicacion(
+    @Query(new ValidarFechasPipe()) query: { desde: string; hasta: string },
+  ) {
+    return this.estadisticasService.contarComentariosPorPublicacion(query.desde, query.hasta);
+  }
 }
