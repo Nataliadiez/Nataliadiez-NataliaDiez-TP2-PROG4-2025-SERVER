@@ -62,7 +62,6 @@ export class PublicacionesService {
     const activas = publicaciones.filter(
       (p) => p.autor && typeof p.autor === 'object' && (p.autor as any).estado !== false,
     );
-    console.log(activas);
     return activas;
   }
 
@@ -81,10 +80,14 @@ export class PublicacionesService {
   }
 
   async findOne(id: string) {
-    const publicacion = await this.publicacionModel.findById(id);
+    const publicacion = await this.publicacionModel
+      .findById(id)
+      .populate('autor', 'userName imagenPerfil')
+      .populate('comentarios.usuario', 'userName imagenPerfil');
+
     if (!publicacion) throw new NotFoundException('Publicación no encontrada');
 
-    return publicacion as Publicacione;
+    return publicacion;
   }
 
   async update(id: string, body: any, imagen: Express.Multer.File) {

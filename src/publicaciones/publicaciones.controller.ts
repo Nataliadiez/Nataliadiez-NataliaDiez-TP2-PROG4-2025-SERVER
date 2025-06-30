@@ -124,4 +124,10 @@ export class PublicacionesController {
     const esAdmin = usuario.user.perfil === 'administrador';
     return this.publicacionesService.remove(id, String(usuarioId), esAdmin);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.publicacionesService.findOne(id);
+  }
 }
