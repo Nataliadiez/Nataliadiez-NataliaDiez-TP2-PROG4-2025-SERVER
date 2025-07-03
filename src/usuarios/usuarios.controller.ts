@@ -46,7 +46,7 @@ export class UsuariosController {
   )
   actualizarPerfil(
     @Req() req: Request & { user: any },
-    @Body() dto: UpdateUsuarioDto,
+    @Body() dto: UpdateUsuarioDto & { imagenActual?: string },
     @UploadedFile() imagen?: Express.Multer.File,
   ) {
     const usuarioId = req.user.id;

@@ -1,19 +1,32 @@
 import { Module } from '@nestjs/common';
-import { UsuariosService } from './usuarios.service';
 import { UsuariosController } from './usuarios.controller';
+import { UsuariosService } from './usuarios.service';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsuarioSchema } from './entities/usuario.entity';
-import { PublicacioneSchema } from 'src/publicaciones/entities/publicacione.entity';
+import { Usuario, UsuarioSchema } from './entities/usuario.entity';
+import { Publicacione, PublicacioneSchema } from '../publicaciones/entities/publicacione.entity';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: 'Usuario', schema: UsuarioSchema },
-      { name: 'Publicacione', schema: PublicacioneSchema },
+      { name: Usuario.name, schema: UsuarioSchema },
+      { name: Publicacione.name, schema: PublicacioneSchema },
     ]),
+    MulterModule.register({
+      storage: diskStorage({
+        destination(req, file, callback) {
+          callback(null, 'public/images');
+        },
+        filename(req, file, callback) {
+          const nuevoNombre = `${Date.now()}-${file.originalname}`;
+          callback(null, nuevoNombre);
+        },
+      }),
+    }),
   ],
   controllers: [UsuariosController],
   providers: [UsuariosService],
-  exports: [MongooseModule, UsuariosService], //exporta el modelo y el servicio para ser reutilizados en otros módulos
+  exports: [UsuariosService],
 })
 export class UsuariosModule {}

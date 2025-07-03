@@ -31,6 +31,13 @@ export class AuthService {
 
   async registrar(body: CreateUsuarioDto, imagenPerfil: Express.Multer.File, perfil: string) {
     try {
+      if (Array.isArray(perfil)) {
+        perfil = perfil[0];
+      }
+
+      console.log('contenido perfil: ', perfil);
+      console.log('tipo ', typeof perfil);
+
       if (!imagenPerfil) {
         throw new BadRequestException('La imagen de perfil es obligatoria');
       }

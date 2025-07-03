@@ -41,12 +41,9 @@ export class AuthController {
       limits: imageFileLimits,
     }),
   )
-  registroAdmin(
-    @Req() req: Request & { user: any },
-    @UploadedFile() imagenPerfil: Express.Multer.File,
-    @Body() body: any,
-  ) {
-    const perfil = 'administrador';
+  registroAdmin(@UploadedFile() imagenPerfil: Express.Multer.File, @Body() body: any) {
+    let perfil = body.perfil;
+    if (Array.isArray(perfil)) perfil = perfil[0];
     return this.authService.registrar(body, imagenPerfil, perfil);
   }
 

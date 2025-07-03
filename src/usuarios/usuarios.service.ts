@@ -130,11 +130,9 @@ export class UsuariosService {
       if (imagen) {
         usuario.imagenPerfil = `/images/${imagen.filename}`;
       }
-
       usuario.userName = dto.userName || usuario.userName;
       usuario.email = dto.email || usuario.email;
       usuario.descripcion = dto.descripcion || usuario.descripcion;
-
       await usuario.save();
       return usuario;
     } catch (error) {
