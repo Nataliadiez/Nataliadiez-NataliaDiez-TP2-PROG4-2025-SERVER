@@ -48,21 +48,32 @@ export class PublicacionesService {
 
   async findAll(skip = 0, limit = 5, orden = 'createdAt', autorId?: string) {
     const sortKey = orden === 'likes' ? 'likesCount' : 'createdAt';
-    const filtro: FilterQuery<Publicacione> = { estado: true };
+
+    const filtro: FilterQuery<Publicacione> = {
+      estado: true,
+    };
+
     if (autorId) {
       filtro.autor = autorId;
     }
+
     const publicaciones = await this.publicacionModel
       .find(filtro)
       .sort({ [sortKey]: -1 })
-      .skip(skip)
-      .limit(limit)
-      .populate('autor', 'userName imagenPerfil estado');
+      .skip(0)
+      .limit(100)
+      .populate({
+        path: 'autor',
+        match: { estado: true },
+        select: 'userName imagenPerfil estado',
+      });
 
-    const activas = publicaciones.filter(
-      (p) => p.autor && typeof p.autor === 'object' && (p.autor as any).estado !== false,
-    );
-    return activas;
+    const filtradas = publicaciones.filter((p) => p.autor !== null);
+
+    return {
+      nuevas: filtradas.slice(skip, skip + limit),
+      hasMore: filtradas.length > skip + limit,
+    };
   }
 
   async findInactivas() {
@@ -186,9 +197,7 @@ export class PublicacionesService {
     if (!publicacion) {
       throw new NotFoundException('Publicación no encontrada');
     }
-    const comentariosOrdenados = publicacion.comentarios.sort(
-      (a, b) => b.fecha.getTime() - a.fecha.getTime(),
-    );
+    const comentariosOrdenados = publicacion.comentarios;
 
     const comentariosPaginados = comentariosOrdenados.slice(skip, skip + limit);
 

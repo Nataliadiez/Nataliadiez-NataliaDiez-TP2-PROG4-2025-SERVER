@@ -81,7 +81,7 @@ export class EstadisticasService {
         $sort: { _id: 1 },
       },
     ]);
-
+    console.log(resultado);
     return resultado || [];
   }
 

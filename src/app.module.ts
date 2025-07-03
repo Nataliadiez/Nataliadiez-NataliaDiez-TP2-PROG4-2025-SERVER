@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
@@ -7,11 +9,13 @@ import { PublicacionesModule } from './publicaciones/publicaciones.module';
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
-import { SpotifyModule } from './spotify/spotify.module';
-//JWT_SECRET
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', '..', 'client', 'dist', 'client'),
+    }),
+
     AuthModule,
     ConfigModule.forRoot({
       isGlobal: true,
@@ -20,7 +24,6 @@ import { SpotifyModule } from './spotify/spotify.module';
     PublicacionesModule,
     UsuariosModule,
     EstadisticasModule,
-    SpotifyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
